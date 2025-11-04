@@ -23,25 +23,50 @@ def _compose_query(keyword: str, start: str, end: str, lang_ko: bool = True) -> 
         parts.append("lang:ko")
     return " ".join(parts)
 
-def _run_snscrape(query: str, limit: Optional[int] = None) -> List[Dict[str, Any]]:
+def _run_snscrape(
+    query: str,
+    limit: Optional[int] = None,
+    cookies_path: Optional[str] = None
+) -> List[Dict[str, Any]]:
     """
     snscrape CLI 실행 → jsonl 라인 파싱 → dict 목록 리턴
+    - cookies_path: 로그인 쿠키 파일 경로 (예: cookies.txt)
+    - limit: 최대 수집 트윗 수
     """
-    cmd = ["snscrape", "--jsonl", "--progress", "twitter-search", query]
+    cmd = [sys.executable, "-m", "snscrape", "twitter-search", "--jsonl", "--progress"]
+    if cookies_path:
+        cmd += ["--cookies", cookies_path]
     if limit is not None:
-        cmd.extend(["--max-results", str(limit)])
+        cmd += ["--max-results", str(limit)]
+    cmd.append(query)
 
-    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    # 쿼리문 추가
+    cmd.append(query)
+
+    # 실행
+    proc = subprocess.Popen(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+
     rows: List[Dict[str, Any]] = []
-    assert proc.stdout is not None
-    for line in proc.stdout:
+    out, err = proc.communicate()
+
+    # stderr 로그 확인용
+    if err:
+        print("[snscrape stderr]", err.strip())
+
+    # JSONL 라인별 파싱
+    for line in out.splitlines():
         try:
             rows.append(json.loads(line))
         except json.JSONDecodeError:
             continue
-    proc.stdout.close()
-    proc.wait()
+
     return rows
+
 
 def _flatten_tweet(j: Dict[str, Any]) -> Dict[str, Any]:
     """
@@ -143,7 +168,8 @@ def run_collect(cfg: dict, limit_per_kw: Optional[int] = None) -> pd.DataFrame:
     all_rows: List[Dict[str, Any]] = []
     for kw in keywords:
         q = _compose_query(kw, start, end, lang_ko=lang_filter)
-        js = _run_snscrape(q, limit=limit_per_kw)
+        cookies_path = coll.get("cookies_path")
+        js = _run_snscrape(q, limit=limit_per_kw, cookies_path=cookies_path)
         for j in js:
             all_rows.append(_flatten_tweet(j))
         # 간단 체크포인트(옵션)
@@ -182,6 +208,8 @@ def run_collect(cfg: dict, limit_per_kw: Optional[int] = None) -> pd.DataFrame:
         before = len(df)
         df = df[df.apply(_botlike_filter, axis=1)].copy()
         print(f"[FILTER] bot/advert heuristic: {before} -> {len(df)}")
+
+    df["url"] = df["url"].str.replace("twitter.com", "x.com", regex=False)
 
     # 8) 저장
     out_csv = f"{output_prefix}.csv"

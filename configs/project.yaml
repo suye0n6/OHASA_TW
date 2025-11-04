@@ -5,6 +5,7 @@ project:
   end_date: "2025-11-04"   # snscrape는 until이 배제(exclusive)
 
 collect:
+  cookies_path: "cookies_txt"
   lang_filter: true            # snscrape lang:ko
   keep_if_hangul: true         # 한글 포함이면 유지
   apply_bot_filter: false      # 휴리스틱 필터 (처음엔 off 권장)
