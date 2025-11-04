@@ -1,0 +1,35 @@
+project:
+  name: ohaasa-twitter
+  timezone: Asia/Seoul
+  start_date: "2023-01-01"
+  end_date: "2025-11-04"   # snscrape는 until이 배제(exclusive)
+
+collect:
+  lang_filter: true            # snscrape lang:ko
+  keep_if_hangul: true         # 한글 포함이면 유지
+  apply_bot_filter: false      # 휴리스틱 필터 (처음엔 off 권장)
+  checkpoint_every: 5000
+  output_prefix: "data/raw/ohaasa_2023_2025"
+
+  keywords:
+    - "오하아사"
+    - "오하아사 운세"
+    - "아침운세"
+    - "오늘의 운세"
+    - "おはよう朝日です"
+    - "おは朝"
+    - "おは朝 占い"
+
+zodiac_regex:
+  양자리: "(양자리|양\\s*자리|양)"
+  황소자리: "(황소자리|황소\\s*자리|황소)"
+  쌍둥이자리: "(쌍둥이자리|쌍둥이\\s*자리|쌍둥이|쌍자이?)"
+  게자리: "(게자리|게\\s*자리|게)"
+  사자자리: "(사자자리|사자\\s*자리|사자)"
+  처녀자리: "(처녀자리|처녀\\s*자리|처녀)"
+  천칭자리: "(천칭자리|천칭\\s*자리|천칭)"
+  전갈자리: "(전갈자리|전갈\\s*자리|전갈)"
+  사수자리: "(사수자리|사수\\s*자리|사수)"
+  염소자리: "(염소자리|염소\\s*자리|염소)"
+  물병자리: "(물병자리|물병\\s*자리|물병)"
+  물고기자리: "(물고기자리|물고기\\s*자리|물고기)"

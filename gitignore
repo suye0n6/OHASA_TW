@@ -1,0 +1,22 @@
+# venv
+.venv/
+.env/
+# Jupyter
+.ipynb_checkpoints/
+# Data & outputs
+data/raw/
+data/interim/
+data/processed/
+data/external/
+logs/
+reports/figures/
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+# OS/IDE
+.DS_Store
+.vscode/
+.idea/

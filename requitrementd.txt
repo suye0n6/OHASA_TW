@@ -1,0 +1,12 @@
+pandas
+pyarrow
+tqdm
+regex
+python-dateutil
+pytz
+langdetect
+matplotlib
+numpy
+scipy
+scikit-learn
+snscrape
